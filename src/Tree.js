@@ -3,37 +3,28 @@ import { useState, useEffect } from 'react'
 import { collection, onSnapshot } from 'firebase/firestore';
 import { firestore } from './firebaseConfig.js';
 
-function getTree(collName) {
-    
-}
-
 function Tree() {
     const [nodes, setNodes] = useState([]);
     const [links, setLinks] = useState([]);
 
-    const nodesRef = collection(firestore, 'nodes');
-    onSnapshot(nodesRef, (snapshot) => {
-        const docs = [];
+    useEffect(() => {
+        const fetchCollection = (collectionName, setState) => {
+            const collectionRef = collection(firestore, collectionName);
+            onSnapshot(collectionRef, (snapshot) => {
+                const docs = [];
 
-        snapshot.docChanges().forEach((change) => {
-            const document = change.doc;
-            docs.unshift({id: document.id, ...document.data()});
-        });
+                snapshot.docChanges().forEach((change) => {
+                    const document = change.doc;
+                    docs.unshift({ id: document.id, ...document.data() });
+                });
 
-        setNodes(docs);
-    });
+                setState(docs);
+            });
+        };
 
-    const linksRef = collection(firestore, 'links')
-    onSnapshot(linksRef, (snapshot) => {
-        const docs = [];
-
-        snapshot.docChanges().forEach((change) => {
-            const document = change.doc;
-            docs.unshift({id: document.id, ...document.data()});
-        });
-
-        setLinks(docs);
-    });
+        fetchCollection('nodes', setNodes);
+        fetchCollection('links', setLinks);
+    }, []);
     
     return (
         <div id='wrapper'>
